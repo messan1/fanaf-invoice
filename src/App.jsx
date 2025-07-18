@@ -44,7 +44,7 @@ function generateBannerbearURL(name, position) {
 }
 
 // Simple Loading Screen Component
-function LoadingScreen({ message = "Invoice is loading" }) {
+function LoadingScreen({ message = "Chargement..." }) {
   return (
     <div className="fixed inset-0 bg-white flex items-center justify-center z-50">
       <div className="text-center">
@@ -65,15 +65,32 @@ export default function App() {
   });
   
   const [isFlipped, setIsFlipped] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start with loading true
   const [isUpdatingBadge, setIsUpdatingBadge] = useState(false);
   const [details, setDetails] = useQueryState("details");
   const [type] = useQueryState("type");
   const [redirecting, setRedirecting] = useState(false);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
-  // Redirect to registration page if no details
+  // Initial loading delay
   useEffect(() => {
-    if (!details) {
+    // Simulate loading time and allow components to initialize
+    const loadingTimer = setTimeout(() => {
+      setIsLoading(false);
+      setInitialLoadComplete(true);
+    }, 2000); // 2 second delay
+
+    return () => clearTimeout(loadingTimer);
+  }, []);
+
+  // Redirect to registration page if no details or invalid details
+  useEffect(() => {
+    // Only check for redirect after initial load is complete
+    if (!initialLoadComplete) return;
+    
+    // Only redirect if there are truly no details and we've tried to parse them
+    if (!details || details.trim() === "") {
+      console.log("No details found in URL, redirecting to registration");
       setRedirecting(true);
       // Add a small delay to show redirect message
       setTimeout(() => {
@@ -81,11 +98,16 @@ export default function App() {
       }, 1500);
       return;
     }
-  }, [details]);
+    
+    // If we have details but they're invalid, still try to show the page with default data
+    // This prevents infinite redirects for malformed URLs
+    console.log("Details parameter found:", details);
+  }, [details, initialLoadComplete]);
 
   // Periodic card flipping with customizable interval
   useEffect(() => {
-    if (!redirecting && !isLoading) {
+    // Only start flipping after initial load is complete
+    if (!redirecting && !isLoading && initialLoadComplete) {
       const flipIntervalMs = flipInterval * 1000; // Convert to milliseconds
       const interval = setInterval(() => {
         setIsFlipped(prev => !prev);
@@ -93,25 +115,60 @@ export default function App() {
 
       return () => clearInterval(interval);
     }
-  }, [flipInterval, redirecting, isLoading]);
+  }, [flipInterval, redirecting, isLoading, initialLoadComplete]);
+
+  // Helper function to safely decode base64
+  const safeAtob = (str) => {
+    try {
+      // First, try to decode URL-encoded characters
+      const urlDecoded = decodeURIComponent(str);
+      return atob(urlDecoded);
+    } catch (error1) {
+      try {
+        // If URL decoding fails, try direct base64 decoding
+        return atob(str);
+      } catch (error2) {
+        console.error("Base64 decode failed:", error2);
+        throw new Error("Invalid base64 encoding");
+      }
+    }
+  };
 
   // Parse customer data from details
   const customerData = useMemo(() => {
-    if (!details) {
-      return {
-        name: "Salomon Dion",
-        position: "Directeur Exécutif",
-        email: "salomon@example.com",
-        company: "Company Name",
-        memberCount: 1,
-        totalAmount: "350.000 FCFA",
-        isMember: true
-      };
+    const defaultData = {
+      name: "Salomon Dion",
+      position: "Directeur Exécutif",
+      email: "salomon@example.com",
+      company: "Company Name",
+      memberCount: 1,
+      totalAmount: "350.000 FCFA",
+      isMember: true
+    };
+
+    if (!details || details.trim() === "") {
+      console.log("No details provided, using default data");
+      return defaultData;
     }
 
     try {
-      const parsedData = JSON.parse(atob(details));
+      // Log the raw details for debugging
+      console.log("Raw details parameter:", details);
+      
+      // Safely decode the base64 string
+      const decodedString = safeAtob(details);
+      console.log("Decoded string:", decodedString);
+      
+      // Parse the JSON
+      const parsedData = JSON.parse(decodedString);
+      console.log("Parsed data:", parsedData);
+      
       const creator = parsedData.creator;
+      
+      if (!creator) {
+        console.warn("No creator data found in parsed details");
+        return defaultData;
+      }
       
       // Calculate pricing
       const isMember = type === "member" || parsedData.type === "member";
@@ -124,8 +181,8 @@ export default function App() {
       
       const totalAmountFCFA = basePrice * memberCount;
       
-      return {
-        name: `${creator.first_name || ""} ${creator.last_name || ""}`.trim(),
+      const result = {
+        name: `${creator.first_name || ""} ${creator.last_name || ""}`.trim() || "Nom non fourni",
         position: creator.registration_data?.fonction || "Participant",
         email: creator.email || "",
         company: creator.company || "",
@@ -134,17 +191,21 @@ export default function App() {
         isMember,
         fullData: parsedData
       };
+      
+      console.log("Final customer data:", result);
+      return result;
+      
     } catch (error) {
       console.error("Failed to parse details:", error);
-      return {
-        name: "Salomon Dion",
-        position: "Directeur Exécutif",
-        email: "salomon@example.com",
-        company: "Company Name",
-        memberCount: 1,
-        totalAmount: "350.000 FCFA",
-        isMember: true
-      };
+      console.error("Error type:", error.constructor.name);
+      console.error("Error message:", error.message);
+      
+      // Log the details parameter for debugging
+      console.log("Problematic details parameter:", details);
+      console.log("Details length:", details?.length);
+      console.log("Details type:", typeof details);
+      
+      return defaultData;
     }
   }, [details, type]);
 
@@ -193,20 +254,20 @@ export default function App() {
   ];
 
   // Show loading screen while loading, redirecting, or no details
-  if (redirecting) {
-    return (
-      <>
-        <Leva hidden />
-        <LoadingScreen message="Redirecting to registration..." />
-      </>
-    );
-  }
-
-  if (isLoading || !details) {
+  if (isLoading) {
     return (
       <>
         <Leva hidden />
         <LoadingScreen />
+      </>
+    );
+  }
+
+  if (redirecting) {
+    return (
+      <>
+        <Leva hidden />
+        <LoadingScreen message="Redirection..." />
       </>
     );
   }
