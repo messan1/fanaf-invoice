@@ -127,8 +127,21 @@ export default function App() {
   // Helper function to safely decode base64
   const safeAtob = (str) => {
     try {
+      // Get current URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+
+      console.log(urlParams)
+
+      // Get specific parameter
+      let id = urlParams.get("details");
+
+      id = id.replaceAll("type=non-member","")
+      id = id.replaceAll("type=member","")
+
       // First, try to decode URL-encoded characters
-      const urlDecoded = decodeURIComponent(str);
+      const urlDecoded = decodeURIComponent(id);
+      console.log(id,"urlDecoded")
+
       return atob(urlDecoded);
     } catch (error1) {
       try {
@@ -136,8 +149,8 @@ export default function App() {
         return atob(str);
       } catch (error2) {
         console.error("Base64 decode failed:", error2);
-           //window.location.href = "https://fanaf-register.vercel.app/register";
-
+        //window.location.href = "https://fanaf-register.vercel.app/register";
+        return null;
       }
     }
   };
@@ -154,10 +167,12 @@ export default function App() {
       isMember: true,
     };
 
+    console.log(safeAtob(details), "co");
+
     if (!safeAtob(details)) {
       console.log("No details provided, using default data");
       //window.location.href = "https://fanaf-register.vercel.app/register";
-      alert("not")
+      alert("not");
 
       return defaultData;
     }
@@ -235,9 +250,8 @@ export default function App() {
     });
   }, [customerData.name, customerData.position]);
 
-
-    // Show loading screen while loading, redirecting, or no details
-  if (badgeData.name==="" && badgeData.position==="") {
+  // Show loading screen while loading, redirecting, or no details
+  if (badgeData.name === "" && badgeData.position === "") {
     return (
       <>
         <Leva hidden />
@@ -245,7 +259,6 @@ export default function App() {
       </>
     );
   }
-
 
   // Generate dynamic Bannerbear URL based on user data
   const dynamicBannerbearURL = useMemo(() => {
@@ -276,7 +289,6 @@ export default function App() {
     "https://images.unsplash.com/photo-1557804506-669a67965ba1?w=512&h=512&fit=crop",
     "https://images.unsplash.com/photo-1557804506-669a67965ba2?w=512&h=512&fit=crop",
   ];
-
 
   if (redirecting) {
     return (
