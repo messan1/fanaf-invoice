@@ -101,7 +101,7 @@ export default function App() {
       setRedirecting(true);
       // Add a small delay to show redirect message
       setTimeout(() => {
-        window.location.href = "https://fanaf-register.vercel.app/register";
+        //window.location.href = "https://fanaf-register.vercel.app/register";
       }, 1500);
       return;
     }
@@ -136,7 +136,7 @@ export default function App() {
         return atob(str);
       } catch (error2) {
         console.error("Base64 decode failed:", error2);
-           window.location.href = "https://fanaf-register.vercel.app/register";
+           //window.location.href = "https://fanaf-register.vercel.app/register";
 
       }
     }
@@ -154,9 +154,10 @@ export default function App() {
       isMember: true,
     };
 
-    if (!details || details.trim() === "" || safeAtob(details)) {
+    if (!safeAtob(details)) {
       console.log("No details provided, using default data");
-      window.location.href = "https://fanaf-register.vercel.app/register";
+      //window.location.href = "https://fanaf-register.vercel.app/register";
+      alert("not")
 
       return defaultData;
     }
@@ -241,7 +242,7 @@ export default function App() {
 
   // State for textures
   const [currentTextures, setCurrentTextures] = useState({
-    front: dynamicBannerbearURL, // Use dynamic URL
+    front: Image, // Use dynamic URL
     back: BackImage,
   });
 
