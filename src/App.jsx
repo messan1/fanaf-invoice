@@ -34,7 +34,7 @@ useGLTF.preload(
 // Function to generate Bannerbear URL with user data
 function generateBannerbearURL(name, position) {
   const baseURL =
-    "https://ondemand.bannerbear.com/simpleurl/Pa37MZkebYndyAorDp/image";
+    "https://ondemand.bannerbear.com/simpleurl/qNnLwZdMnyMB1AWDJy/image";
 
   // URL encode the values
   const encodedName = encodeURIComponent(name || "Name");
