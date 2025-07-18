@@ -33,12 +33,13 @@ useGLTF.preload(
 
 // Function to generate Bannerbear URL with user data
 function generateBannerbearURL(name, position) {
-  const baseURL = "https://ondemand.bannerbear.com/simpleurl/OK45pN8nM49BW97Z6P/image";
-  
+  const baseURL =
+    "https://ondemand.bannerbear.com/simpleurl/OK45pN8nM49BW97Z6P/image";
+
   // URL encode the values
   const encodedName = encodeURIComponent(name || "Name");
   const encodedPosition = encodeURIComponent(position || "Position");
-  
+
   // Build the URL with message (name) and poste (position)
   return `${baseURL}/message/text/${encodedName}/poste/text/${encodedPosition}`;
 }
@@ -59,11 +60,17 @@ function LoadingScreen({ message = "Chargement..." }) {
 }
 
 export default function App() {
-  const { debug, flipInterval } = useControls({ 
+  const { debug, flipInterval } = useControls({
     debug: false,
-    flipInterval: { value: 5, min: 1, max: 15, step: 1, label: "Flip Interval (s)" }
+    flipInterval: {
+      value: 5,
+      min: 1,
+      max: 15,
+      step: 1,
+      label: "Flip Interval (s)",
+    },
   });
-  
+
   const [isFlipped, setIsFlipped] = useState(false);
   const [isLoading, setIsLoading] = useState(true); // Start with loading true
   const [isUpdatingBadge, setIsUpdatingBadge] = useState(false);
@@ -87,7 +94,7 @@ export default function App() {
   useEffect(() => {
     // Only check for redirect after initial load is complete
     if (!initialLoadComplete) return;
-    
+
     // Only redirect if there are truly no details and we've tried to parse them
     if (!details || details.trim() === "") {
       console.log("No details found in URL, redirecting to registration");
@@ -98,7 +105,7 @@ export default function App() {
       }, 1500);
       return;
     }
-    
+
     // If we have details but they're invalid, still try to show the page with default data
     // This prevents infinite redirects for malformed URLs
     console.log("Details parameter found:", details);
@@ -110,7 +117,7 @@ export default function App() {
     if (!redirecting && !isLoading && initialLoadComplete) {
       const flipIntervalMs = flipInterval * 1000; // Convert to milliseconds
       const interval = setInterval(() => {
-        setIsFlipped(prev => !prev);
+        setIsFlipped((prev) => !prev);
       }, flipIntervalMs);
 
       return () => clearInterval(interval);
@@ -129,7 +136,8 @@ export default function App() {
         return atob(str);
       } catch (error2) {
         console.error("Base64 decode failed:", error2);
-        throw new Error("Invalid base64 encoding");
+           window.location.href = "https://fanaf-register.vercel.app/register";
+
       }
     }
   };
@@ -137,74 +145,77 @@ export default function App() {
   // Parse customer data from details
   const customerData = useMemo(() => {
     const defaultData = {
-      name: "Salomon Dion",
-      position: "Directeur Exécutif",
-      email: "salomon@example.com",
-      company: "Company Name",
+      name: "-",
+      position: "-",
+      email: "-",
+      company: "-",
       memberCount: 1,
-      totalAmount: "350.000 FCFA",
-      isMember: true
+      totalAmount: "...",
+      isMember: true,
     };
 
-    if (!details || details.trim() === "") {
+    if (!details || details.trim() === "" || safeAtob(details)) {
       console.log("No details provided, using default data");
+      window.location.href = "https://fanaf-register.vercel.app/register";
+
       return defaultData;
     }
 
     try {
       // Log the raw details for debugging
       console.log("Raw details parameter:", details);
-      
+
       // Safely decode the base64 string
       const decodedString = safeAtob(details);
       console.log("Decoded string:", decodedString);
-      
+
       // Parse the JSON
       const parsedData = JSON.parse(decodedString);
       console.log("Parsed data:", parsedData);
-      
+
       const creator = parsedData.creator;
-      
+
       if (!creator) {
         console.warn("No creator data found in parsed details");
         return defaultData;
       }
-      
+
       // Calculate pricing
       const isMember = type === "member" || parsedData.type === "member";
       const basePrice = isMember ? 350000 : 500000;
       let memberCount = 1;
-      
+
       if (parsedData.member && Array.isArray(parsedData.member)) {
         memberCount = parsedData.member.length;
       }
-      
+
       const totalAmountFCFA = basePrice * memberCount;
-      
+
       const result = {
-        name: `${creator.first_name || ""} ${creator.last_name || ""}`.trim() || "Nom non fourni",
+        name:
+          `${creator.first_name || ""} ${creator.last_name || ""}`.trim() ||
+          "Nom non fourni",
         position: creator.registration_data?.fonction || "Participant",
         email: creator.email || "",
         company: creator.company || "",
         memberCount,
         totalAmount: `${totalAmountFCFA.toLocaleString()} FCFA`,
         isMember,
-        fullData: parsedData
+        fullData: parsedData,
       };
-      
+
       console.log("Final customer data:", result);
       return result;
-      
     } catch (error) {
       console.error("Failed to parse details:", error);
       console.error("Error type:", error.constructor.name);
       console.error("Error message:", error.message);
-      
+
       // Log the details parameter for debugging
       console.log("Problematic details parameter:", details);
       console.log("Details length:", details?.length);
       console.log("Details type:", typeof details);
-      
+
       return defaultData;
     }
   }, [details, type]);
@@ -236,9 +247,9 @@ export default function App() {
 
   // Update front texture when dynamic URL changes
   useEffect(() => {
-    setCurrentTextures(prev => ({
+    setCurrentTextures((prev) => ({
       ...prev,
-      front: dynamicBannerbearURL
+      front: dynamicBannerbearURL,
     }));
   }, [dynamicBannerbearURL]);
 
@@ -338,16 +349,13 @@ export default function App() {
       {debug && (
         <div className="absolute top-4 left-4 z-30 bg-black bg-opacity-50 text-white p-2 rounded">
           <p className="text-sm">
-            Card: {isFlipped ? "Back" : "Front"} | 
-            Flip every: {flipInterval}s |
+            Card: {isFlipped ? "Back" : "Front"} | Flip every: {flipInterval}s |
             {isUpdatingBadge && " Updating..."}
           </p>
           <p className="text-xs mt-1">
             Name: {badgeData.name} | Position: {badgeData.position}
           </p>
-          <p className="text-xs mt-1 break-all">
-            URL: {dynamicBannerbearURL}
-          </p>
+          <p className="text-xs mt-1 break-all">URL: {dynamicBannerbearURL}</p>
         </div>
       )}
     </div>
