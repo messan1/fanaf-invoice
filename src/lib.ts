@@ -1,12 +1,12 @@
 export async function generateBannerbearImage(templateId, modifications, options = {}) {
-  const API_KEY = "bb_pr_2d87f5d7bc7d7fc1a1df65513b35ca";
+  const API_KEY = "bb_ma_e68eed26f679e0126b47126a38e126";
   
   const myHeaders = new Headers();
   myHeaders.append("Content-Type", "application/json");
   myHeaders.append("Authorization", `Bearer ${API_KEY}`);
   
   const requestData = {
-    template: templateId,
+    template: "Rqg32K5QNB6YD8V07Y",
     modifications: modifications,
     webhook_url: options.webhook_url || null,
     transparent: options.transparent || false,
@@ -19,6 +19,7 @@ export async function generateBannerbearImage(templateId, modifications, options
     body: JSON.stringify(requestData),
     redirect: "follow"
   };
+
   
   try {
     const response = await fetch("https://sync.api.bannerbear.com/v2/images", requestOptions);
@@ -63,7 +64,7 @@ async function createBadge() {
       }
     ];
     
-    const result = await generateBannerbearImage("Aqa9wzDP2eQkZJogk7", modifications);
+    const result = await generateBannerbearImage("Rqg32K5QNB6YD8V07Y", modifications);
     
     console.log("Image generated successfully!");
     console.log("Image URL:", result.imageUrl);
@@ -87,7 +88,7 @@ async function getBadgeImageUrl(name, position) {
     { name: "poste", text: position, color: null, background: null }
   ];
   
-  const result = await generateBannerbearImage("Aqa9wzDP2eQkZJogk7", modifications);
+  const result = await generateBannerbearImage("Rqg32K5QNB6YD8V07Y", modifications);
   return result.imageUrl;
 }
 

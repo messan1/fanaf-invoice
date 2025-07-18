@@ -1,8 +1,26 @@
 import { useState } from "react"
 import { Check, X, ChevronRight } from "lucide-react"
 
-const InvoiceInterface = () => {
+const InvoiceInterface = ({ customerData }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  // Generate invoice number based on customer data
+  const generateInvoiceNumber = () => {
+    const timestamp = Date.now().toString().slice(-6);
+    return `FAA${timestamp}-${String(Math.floor(Math.random() * 9999)).padStart(4, '0')}`;
+  };
+
+  // Get current date formatted
+  const getCurrentDate = () => {
+    return new Date().toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
+
+  const invoiceNumber = "FAA3423-452-00";
+  const currentDate = getCurrentDate();
 
   return (
     <div className="bg-white z-50 min-h-screen flex transition-all duration-300 ease-in-out">
@@ -21,7 +39,7 @@ const InvoiceInterface = () => {
           {/* Header */}
           <div className="mb-6 md:mb-8">
             <h1 className="text-xl sm:text-2xl font-medium text-gray-700 mb-6 md:mb-8 text-center sm:text-left">
-              ASACI TECHNOLOGIES
+              ASACI TECHNOLOGIES - FANAF 2026
             </h1>
           </div>
 
@@ -37,7 +55,12 @@ const InvoiceInterface = () => {
             {/* Status and Amount */}
             <div className="text-center mb-">
               <p className="text-gray-600 text-sm mb-2">Invoice paid</p>
-              <p className="text-3xl sm:text-4xl font-semibold text-gray-900">350.000 FCFA</p>
+              <p className="text-3xl sm:text-4xl font-semibold text-gray-900">{customerData.totalAmount}</p>
+              {customerData.memberCount > 1 && (
+                <p className="text-sm text-gray-500 mt-1">
+                  {customerData.isMember ? "Member" : "Non-member"} rate × {customerData.memberCount} participants
+                </p>
+              )}
             </div>
 
             {/* View Details Link */}
@@ -55,11 +78,11 @@ const InvoiceInterface = () => {
             <div className="space-y-2 mb-6 md:mb-8">
               <div className="flex justify-between items-start">
                 <span className="text-gray-500 text-sm">Invoice number</span>
-                <span className="text-gray-700 text-sm font-medium text-right">FAA90E8A-0002</span>
+                <span className="text-gray-700 text-sm font-medium text-right">{invoiceNumber}</span>
               </div>
               <div className="flex justify-between items-start">
                 <span className="text-gray-500 text-sm">Payment date</span>
-                <span className="text-gray-700 text-sm font-medium text-right">November 28, 2022</span>
+                <span className="text-gray-700 text-sm font-medium text-right">{currentDate}</span>
               </div>
               <div className="flex justify-between items-start">
                 <span className="text-gray-500 text-sm">Payment method</span>
@@ -112,7 +135,7 @@ const InvoiceInterface = () => {
 
           {/* Payment Status */}
           <div className="mb-6 md:mb-8">
-            <h2 className="text-xl sm:text-2xl font-medium text-gray-900 mb-1">Paid on Nov 28, 2022</h2>
+            <h2 className="text-xl sm:text-2xl font-medium text-gray-900 mb-1">Paid on {currentDate}</h2>
           </div>
 
           {/* Summary Section */}
@@ -121,15 +144,23 @@ const InvoiceInterface = () => {
             <div className="space-y-3">
               <div className="flex justify-between items-start">
                 <span className="text-sm text-gray-600">To</span>
-                <span className="text-sm text-gray-900 text-right">Jill Romy</span>
+                <span className="text-sm text-gray-900 text-right">{customerData.name}</span>
               </div>
               <div className="flex justify-between items-start">
                 <span className="text-sm text-gray-600">From</span>
-                <span className="text-sm text-gray-900 text-right">CloudX Groupe LLC</span>
+                <span className="text-sm text-gray-900 text-right">FANAF Organization</span>
               </div>
               <div className="flex justify-between items-start">
                 <span className="text-sm text-gray-600">Invoice</span>
-                <span className="text-sm text-gray-900 text-right">#FAA90E8A-0002</span>
+                <span className="text-sm text-gray-900 text-right">#{invoiceNumber}</span>
+              </div>
+              <div className="flex justify-between items-start">
+                <span className="text-sm text-gray-600">Email</span>
+                <span className="text-sm text-gray-900 text-right">{customerData.email}</span>
+              </div>
+              <div className="flex justify-between items-start">
+                <span className="text-sm text-gray-600">Company</span>
+                <span className="text-sm text-gray-900 text-right">{customerData.company}</span>
               </div>
             </div>
           </div>
@@ -138,36 +169,60 @@ const InvoiceInterface = () => {
           <div className="mb-6 md:mb-8">
             <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">ITEMS</h3>
             <div className="mb-4">
-              <p className="text-sm text-gray-600 mb-3">JULY 14, 2025 – JULY 14, 2023</p>
+              <p className="text-sm text-gray-600 mb-3">JULY 14, 2025 – JULY 14, 2026</p>
               <div className="flex justify-between items-start">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-900">Inscription FANAF 2026</p>
-                  <p className="text-sm text-gray-600">Qty 1</p>
+                  <p className="text-sm text-gray-600">
+                    {customerData.isMember ? "Member" : "Non-member"} registration
+                    {customerData.memberCount > 1 && ` (${customerData.memberCount} participants)`}
+                  </p>
+                  <p className="text-sm text-gray-600">Qty {customerData.memberCount}</p>
                 </div>
-                <span className="text-sm font-medium text-gray-900 ml-4">350.000FCFA</span>
+                <span className="text-sm font-medium text-gray-900 ml-4">{customerData.totalAmount}</span>
               </div>
             </div>
             <div className="border-t pt-4">
               <div className="flex justify-between mb-2">
                 <span className="text-sm font-medium text-gray-900">Total due</span>
-                <span className="text-sm font-medium text-gray-900">350.000 FCFA</span>
+                <span className="text-sm font-medium text-gray-900">{customerData.totalAmount}</span>
               </div>
               <div className="flex justify-between mb-2">
                 <span className="text-sm font-medium text-gray-900">Amount paid</span>
-                <span className="text-sm font-medium text-gray-900">350.000FCFA</span>
+                <span className="text-sm font-medium text-gray-900">{customerData.totalAmount}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm font-medium text-gray-900">Amount remaining</span>
-                <span className="text-sm font-medium text-gray-900">$0.00</span>
+                <span className="text-sm font-medium text-gray-900">0 FCFA</span>
               </div>
             </div>
           </div>
+
+          {/* Additional Members Section */}
+          {customerData.fullData?.member && customerData.fullData.member.length > 0 && (
+            <div className="mb-6 md:mb-8">
+              <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-4">ADDITIONAL PARTICIPANTS</h3>
+              <div className="space-y-3">
+                {customerData.fullData.member.map((member, index) => (
+                  <div key={index} className="border-b pb-3 last:border-b-0">
+                    <p className="text-sm font-medium text-gray-900">
+                      {member.first_name} {member.last_name}
+                    </p>
+                    <p className="text-sm text-gray-600">{member.email}</p>
+                    <p className="text-sm text-gray-600">
+                      {member.registration_data?.fonction} • {member.company}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Footer */}
           <div className="mt-auto pt-6 md:pt-8">
             <p className="text-sm text-gray-600">
               Questions?{" "}
-              <button className="text-blue-600 hover:text-blue-800 transition-colors">Contact CloudX Groupe LLC</button>
+              <button className="text-blue-600 hover:text-blue-800 transition-colors">Contact FANAF Organization</button>
             </p>
           </div>
         </div>
