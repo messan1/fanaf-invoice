@@ -145,11 +145,11 @@ export default function App() {
   // Parse customer data from details
   const customerData = useMemo(() => {
     const defaultData = {
-      name: "-",
-      position: "-",
-      email: "-",
-      company: "-",
-      memberCount: 1,
+      name: "",
+      position: "",
+      email: "",
+      company: "",
+      memberCount: 0,
       totalAmount: "...",
       isMember: true,
     };
@@ -235,6 +235,18 @@ export default function App() {
     });
   }, [customerData.name, customerData.position]);
 
+
+    // Show loading screen while loading, redirecting, or no details
+  if (badgeData.name==="" && badgeData.position==="") {
+    return (
+      <>
+        <Leva hidden />
+        <LoadingScreen />
+      </>
+    );
+  }
+
+
   // Generate dynamic Bannerbear URL based on user data
   const dynamicBannerbearURL = useMemo(() => {
     return generateBannerbearURL(badgeData.name, badgeData.position);
@@ -265,15 +277,6 @@ export default function App() {
     "https://images.unsplash.com/photo-1557804506-669a67965ba2?w=512&h=512&fit=crop",
   ];
 
-  // Show loading screen while loading, redirecting, or no details
-  if (isLoading) {
-    return (
-      <>
-        <Leva hidden />
-        <LoadingScreen />
-      </>
-    );
-  }
 
   if (redirecting) {
     return (
